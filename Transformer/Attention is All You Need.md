@@ -12,43 +12,54 @@
 2. **机器翻译**任务中表现良好
 3. 泛化到别的任务上也有良好的效果
 
-## Conclusion（7）
+## Conclusion (7)
 
 1. 第一个仅使用注意力机制的序列转录模型，将循环层替换为multi-headed self-attention
 2. 训练速度更快，效果更好
 3. 应用范围不局限于文本，图片、音频、视频等都可以试试
 
-## Introduction（1）
+## Introduction (1)
 
 + 当前（2017年），机器翻译常用循环语言模型和encoder-decoder模型
 + RNN的特点：从左到右，每一个当前的状态信息，由前一个状态和当前单词共同决定，来有效学习历史信息
   + 问题1：从左到右按时序完成，无法并行
   + 问题2：历史信息一步一步传递，隐藏层的历史信息无法全部保存（或造成大量历史开销）
-+ 注意力机制以前和RNN一起使用，用于怎么讲信息有效从encoder传递到decoder
-+ Transformer使用纯attention机制
++ 注意力机制以前和RNN一起使用，用于怎么将信息有效从encoder传递到decoder
++ Transformer使用纯attention机制做encoder-decoder
 
-## Background（2）
+## Background (2)
 
-+ CNN：难以对长序列建模；可以做多输出通道（因此attention变为multi-head attention）
++ CNN
+  + 缺点：难以对长序列建模（一层一层向上卷积）
+  + 优点：可以做多输出通道（因此，attention变为multi-head attention模拟多输出通道）
 + 自注意力机制
 
-### Model Architecture
+## Model Architecture
 
-1. 传统encoder-decoder模型
+1. encoder-decoder模型介绍
 
-   1. encoder：从输入序列(x1, ..., xn)，到序列表示(z1, ..., zn)（每个z都是一个向量）
-   2. decoder：生成(y1, ..., y**m**)；解码器是一个一个y生成的，每一步都是一个自回归（输入又是你的输出）
+   1. encoder：输入序列(x1, ..., xn)编码为序列表示(z1, ..., zn)（每个z都是一个向量）
 
-2. Encoder and Decoder Stacks
+      例如，如果输入的是一个句子(x1, x2, x3)，编码后的z1表示第一个单词的向量
 
-   1. encoder
+   2. decoder：获得(z1, ..., z**n**)，生成(y1, ..., y**m**)
 
-      6个完全一样的层堆叠而成，每个层都有两个子层，第一个是multi-head attention，第二个是MLP【？】，每个子层都有残差【？】连接；每一层的维度固定。
+      编码器一般可以看完整个句子；解码器是一个一个生成的，每一步都是一个自回归（过去时刻的输出，也是当前的输入）
 
-> 文章中提到的layer-norm和batch-norm
-> + batch-norm：令每一列的feature，均值为0、方差为1（全局）
-> + layer-norm：每一行（每个样本），均值为0、方差为1（每个样本）
-> 因为每个样本都是一个向量（上面提到的z），所以是3D的，分别为每个样本batch、样本中每个词对应的向量seq，还有每个词的特征feat
+2. Transformer encoder
+
+   每个层都有两个子层：multi-head attention和MLP（多层感知机）；子层都有残差连接；layer-norm
+
+   每个层的向量表示都是固定的。
+
+> 文章中提到的归一化方法：layer-norm和batch-norm
+> + batch-norm
+>   + 每一行是样本（batch），每一列是特征（feature）
+>   + 使每一列（feature）均值为0、方差为1（减均值、除方差）
+>   + 有参数λ和β，可以使这一列的均值和方差
+> + layer-norm
+>   + 使每一行（batch）均值为0、方差为1
+>   + 在transformer中，因为每一个样本都是一个向量，因此输入就是二维（batch、seq），再算上特征，就是三维了。（想象一张纸，垂直放在）因为每个样本都是一个向量（上面提到的z），所以是3D的，分别为每个样本batch、样本中每个词对应的向量seq，还有每个词的特征feat
 
 ​			2.decoder
 
